@@ -1,0 +1,27 @@
+# Kconfig - Rainbonic development board with STM32L151CC MCU
+#
+# Copyright (c) 2018 Ilya Tagunov <tagunil@gmail.com>
+# Copyright (c) 2018 Rainbonic Technology Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+if BOARD_RAINBONIC_L151CC
+
+config BOARD
+	default "rainbonic_l151cc"
+
+if UART_CONSOLE
+
+config UART_STM32_PORT_1
+	default y
+
+endif # UART_CONSOLE
+
+config UART_STM32_PORT_2
+	default y
+
+config UART_STM32_PORT_3
+	default y
+
+endif # BOARD_RAINBONIC_L151CC

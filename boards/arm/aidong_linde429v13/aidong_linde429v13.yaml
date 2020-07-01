@@ -1,0 +1,7 @@
+identifier: aidong_linde429v13
+name: AIDONG-LINDE429V13
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gccarmemb

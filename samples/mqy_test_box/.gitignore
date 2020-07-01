@@ -1,0 +1,3 @@
+outdir/*
+build/*
+copy_lf.sh

@@ -1,0 +1,16 @@
+build/*
+*.bin
+out/*
+pcpout.sh
+lf_gpio_set_ok/*
+core
+alg1024k*
+linde_v13/*
+build_lf_voltage.sh
+build_linde_gpio.sh
+diff*
+.vscode/*
+mqy_build.sh
+.tmp_version
+*.zip
+all_build.sh

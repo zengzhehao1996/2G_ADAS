@@ -1,0 +1,77 @@
+# Copyright (c) 2017 Linaro Limited
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+mainmenu "MCUBOOT configuration"
+
+config ZEPHYR_BASE
+	string
+	option env="ZEPHYR_BASE"
+
+source "$ZEPHYR_BASE/Kconfig.zephyr"
+
+config MCUBOOT_DEVICE_SETTINGS
+	# Hidden selector for device-specific settings
+	bool
+	default y
+        # CPU options
+	select MCUBOOT_DEVICE_CPU_CORTEX_M0 if CPU_CORTEX_M0
+        # Enable flash page layout if available
+	select FLASH_PAGE_LAYOUT if FLASH_HAS_PAGE_LAYOUT
+
+config MCUBOOT_DEVICE_CPU_CORTEX_M0
+	# Hidden selector for Cortex-M0 settings
+	bool
+	default n
+	select SW_VECTOR_RELAY if !CPU_CORTEX_M0_HAS_VECTOR_TABLE_REMAP
+
+menuconfig MCUBOOT_SERIAL
+	bool
+	prompt "MCUBOOT serial recovery"
+	default n
+	select REBOOT
+	select UART_INTERRUPT_DRIVEN
+	select SERIAL
+	select BASE64
+	select TINYCBOR
+	help
+	  Enable serial recovery feature in mcuboot.
+
+config BOOT_MAX_IMG_SECTORS
+	int "max number of sectors per image slot"
+	default 128
+	help
+	  Maximum number of sectors that a swap upgrade can handle
+
+config BOOT_MAX_LINE_INPUT_LEN
+	int "cmd line max length"
+	default 512
+	depends on MCUBOOT_SERIAL
+	help
+	  Maximum length of commands transported over the serial protocol
+
+config BOOT_SERIAL_DETECT_PORT
+	string
+	prompt "GPIO Port to trigger serial recovery mode"
+	default GPIO_0 if SOC_FAMILY_NRF
+	depends on MCUBOOT_SERIAL
+	help
+	  Serial recovery detect port
+
+config BOOT_SERIAL_DETECT_PIN
+	int
+	prompt "Pin to trigger serial recovery mode"
+	default 11 if BOARD_NRF52840_PCA10056
+	default 13 if BOARD_NRF52_PCA10040
+	depends on MCUBOOT_SERIAL
+	help
+	  Serial recovery detect pin
+
+config BOOT_SERIAL_DETECT_PIN_VAL
+	int "Boot Pin trigger value"
+	default 0
+	range 0 1
+	depends on MCUBOOT_SERIAL
+	help
+	  The input pin logic value which triggers the boot serial recovery mode.

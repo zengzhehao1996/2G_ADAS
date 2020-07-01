@@ -1,0 +1,14 @@
+# Kconfig - DMA configuration options
+#
+#
+# Copyright (c) 2016 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+menuconfig DMA_STM32L1X
+	bool "Enable STM32L1x DMA driver"
+	default n
+	depends on SOC_SERIES_STM32L1X
+	help
+	  DMA driver for STM32L1x series SoCs.

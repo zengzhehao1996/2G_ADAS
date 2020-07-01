@@ -1,0 +1,11 @@
+# Kconfig - Rainbonic development board with STM32L151CC MCU configuration
+#
+# Copyright (c) 2018 Ilya Tagunov <tagunil@gmail.com>
+# Copyright (c) 2018 Rainbonic Technology Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config BOARD_RAINBONIC_L151CC
+	bool "Rainbonic L151CC Development Board"
+	depends on SOC_STM32L151XC

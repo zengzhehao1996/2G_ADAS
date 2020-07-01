@@ -1,0 +1,20 @@
+# Kconfig - Aidong Linde429 V14 board configuration
+#
+# Copyright (c) 2016 Linaro Limited.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+if BOARD_AIDONG_LINDE429V14
+
+config BOARD
+	default aidong_linde429v14
+
+if UART_CONSOLE
+
+config UART_STM32_PORT_1
+	default y
+
+endif # UART_CONSOLE
+
+endif # BOARD_AIDONG_LINDE429V14

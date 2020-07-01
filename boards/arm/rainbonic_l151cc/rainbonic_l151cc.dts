@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2018 Ilya Tagunov <tagunil@gmail.com>
+ * Copyright (c) 2018 Rainbonic Technology Technology
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/stm32l151.dtsi>
+
+/ {
+	model = "Rainbonic STM32L151CC board";
+	compatible = "st,stm32l151cc", "st,stm32l151";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		green_led: led@0 {
+			gpios = <&gpiob 6 GPIO_INT_ACTIVE_LOW>;
+			label = "STAT_LED";
+		};
+	};
+
+	aliases {
+		led0 = &green_led;
+	};
+};
+
+&usart1 {
+	current-speed = <115200>;
+	pinctrl-0 = <&usart1_pins_a>;
+	pinctrl-names = "default";
+	status = "ok";
+};
+
+&usart2 {
+	current-speed = <115200>;
+	pinctrl-0 = <&usart2_pins_a>;
+	pinctrl-names = "default";
+	status = "ok";
+};
+
+&usart3 {
+	current-speed = <115200>;
+	pinctrl-0 = <&usart3_pins_a>;
+	pinctrl-names = "default";
+	status = "ok";
+};
+
+&flash0 {
+	/*
+	 * For more information, see:
+	 * http://docs.zephyrproject.org/devices/dts/flash_partitions.html
+	 */
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0x00008000>;
+			read-only;
+		};
+
+		/*
+		 * The flash starting at offset 0x08000 and ending at
+		 * offset 0x09fff is reserved for use by the application.
+		 */
+
+		slot0_partition: partition@a000 {
+			label = "image-0";
+			reg = <0x0000a000 0x00012000>;
+		};
+		slot1_partition: partition@60000 {
+			label = "image-1";
+			reg = <0x0001c000 0x00012000>;
+		};
+		scratch_partition: partition@a0000 {
+			label = "image-scratch";
+			reg = <0x0002e000 0x00012000>;
+		};
+	};
+};

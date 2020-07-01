@@ -1,0 +1,7 @@
+identifier: rainbonic_l151cc
+name: RAINBONIC-L151CC
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gccarmemb

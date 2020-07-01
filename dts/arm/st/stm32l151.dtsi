@@ -1,0 +1,26 @@
+/*
+ * Copyright (c) 2018 Ilya Tagunov <tagunil@gmail.com>
+ * Copyright (c) 2018 Rainbonic Technology Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <st/stm32l1.dtsi>
+
+/ {
+	soc {
+
+		usb: usb@40005c00 {
+			compatible = "st,stm32-usb";
+			reg = <0x40005c00 0x400>;
+			interrupts = <31 0>;
+			interrupt-names = "usb";
+			num-bidir-endpoints = <8>;
+			num-in-endpoints = <0>;
+			num-out-endpoints = <0>;
+			ram-size = <1024>;
+			status = "disabled";
+			label= "USB";
+		};
+	};
+};

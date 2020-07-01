@@ -1,0 +1,7 @@
+outdir/*
+core
+build/*
+*.code-workspace
+.vscode/*
+src.tar
+tags
