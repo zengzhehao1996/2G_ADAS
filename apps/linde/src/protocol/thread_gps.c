@@ -14,6 +14,8 @@ static k_tid_t         g_thread_gps_id;
 static bool factoryFlag = false;
 
 static hwGpsMsg_t g_gps;
+static uint64_t stb_lon = 0;
+static uint64_t stb_lat = 0;
 
 static void gpsCallBack(hwGpsMsg_t* gps)
 {
@@ -76,6 +78,11 @@ static void threadGpsEntry(void* p1)
             tmp.latitude  = (uint64_t)(g_gps.lat * 1000000);
             tmp.longitude = (uint64_t)(g_gps.lon * 1000000);
             tmp.speed     = (uint32_t)(g_gps.speed * 1.852 * 1000);
+            stb_lon = tmp.longitude;
+            print_log("stb_lon is %ld\n", stb_lon);
+            stb_lat = tmp.latitude;
+            print_log("stb_lat is %ld\n", stb_lat);
+
             if(factoryFlag)
             {
                 print_log("gps hdop = %d....................\n",tmp.hdop);
@@ -149,4 +156,20 @@ void setFatoryGpsInterval(bool factoryGps)
 hwGpsMsg_t getDFTtailGps()
 {
     return g_gps;
+}
+
+uint64_t getLongitude()
+{
+    uint64_t longi = 0;
+    longi = stb_lon;
+    print_log("get longitude is %ld\n", longi);
+    return longi;
+}
+
+uint64_t getLatitude()
+{
+    uint64_t lati = 0;
+    lati = stb_lat;
+    print_log("get latitude is %ld\n", lati);
+    return lati;
 }

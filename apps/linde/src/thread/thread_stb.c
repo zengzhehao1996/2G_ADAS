@@ -6,6 +6,11 @@
 #include "proto_adapt.h"
 #include "hw_uart.h"
 #include "rtc.h"
+#include "rfid_thread.h"
+#include "thread_gps.h"
+#include "message_center_thread.h"
+#include "server_interface.h"
+#include "config.h"
 
 #define THREAD_STB_STACK_SIZE 2048
 #define FORWARD 0x01
@@ -60,29 +65,49 @@ void stopThreadSTB()
 
 
 static void threadSTBEntry()
-{
+{ 
     int32_t ret = 0;
     static int last_time = 0;
     static int timestamp = 0;
-    static int count = 0;
-    
+    static int stage_count = 0;
+    static int hb_count = 0;
+    static uint32_t rfid = 0;
+    static uint64_t longitude = 0;
+    static uint64_t latitude = 0;
+    static uint8_t *imei = NULL;
+   
     ret = hw_uart_init();
     if(0 != ret)
     {
         print_log("Uart init failed.\n");
     }
-    timestamp = getTimeStamp();
-    timestamp_buff[0] = TIMESTAMP_START;
-    timestamp_buff[1] = timestamp;
-    timestamp_buff[2] = END;
-    //print_log("%d\n", timestamp_buff[1]);
-    hw_uart_send_bytes(HW_UART6, timestamp_buff, sizeof(timestamp_buff));
-
 
     while(1)
     {
+        
+        /*
+        imei = gSysconfig.devId;
+        //print_log("imei is %s\n", imei);
+        longitude = getLongitude();
+        latitude = getLatitude();
+        print_log("longitude is %ld\n", longitude);
+        print_log("latitude is %ld\n", latitude);
+        */
+
+
+        hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+        if((RxBuff[0] == 0x44) && (RxBuff[1] == 0xCC))   //send timestamp when LAB asks
+        {
+            timestamp = getTimeStamp();
+            timestamp_buff[0] = TIMESTAMP_START;
+            timestamp_buff[1] = timestamp;
+            timestamp_buff[2] = END;
+            //print_log("%d\n", timestamp_buff[1]);
+            hw_uart_send_bytes(HW_UART6, timestamp_buff, sizeof(timestamp_buff));
+        }
+
         int current_time = k_uptime_get();
-        if((current_time - last_time >= HEART_BEAT_INTERVEL) || last_time == 0)
+        if((current_time - last_time >= HEART_BEAT_INTERVEL) || last_time == 0)  //send heartbeat every 30s, get response from LAB, tell server if there is no response for 4 times
         {
             heartbeat_buff[0] = HEART_BEAT_START;
             heartbeat_buff[1] = HEART_BEAT;
@@ -92,11 +117,22 @@ static void threadSTBEntry()
             print_log("heart beat sended\n");
 			last_time = current_time;
             
-            //next, get response from serial, if no response for 4 times, tell server
+            hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+            if(hb_count < 4)
+            {
+                if(RxBuff[0] != 0xBB)
+                {
+                    hb_count += 1;
+                }
+            }
+            else
+            {
+                //tell server
+            }   
 		}
 
         speed = getLastSpeed();
-		print_log("speed is %d\n", speed);
+		print_log("speed is %d\n", speed);  //send veichle stage judging by speed
         if(0 == speed)
         {
             stage = '0';
@@ -112,16 +148,16 @@ static void threadSTBEntry()
 		
 		print_log("stage is %s\n", stage);
 
-        if(count <= 30)
+        if(stage_count <= 30)
         {
             if(stage != lastStage)
             {    
-                count = 1;
+                stage_count = 1;
                 lastStage = stage;
             }
             else
             {
-                count += 1;
+                stage_count += 1;
                 print_log("count is %d\n", count);
             }
         }
@@ -151,7 +187,7 @@ static void threadSTBEntry()
             //接下来要从串口读回复
             print_log("stage change msg sended");
             lastStage = stage;
-            count = 0;
+            stage_count = 0;
         }
             
         

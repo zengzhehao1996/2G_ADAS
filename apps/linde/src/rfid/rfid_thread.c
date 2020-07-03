@@ -292,3 +292,4 @@ void debugRfidErrFlagSet(bool flag)
     rfidReadFailFlag = flag;
 }
 
+

@@ -160,6 +160,7 @@ bool loadConfig(void)
     return true;
 }
 
+
 void printConfig(sysconfig_t *ps)
 {
     if(!ps)
@@ -193,6 +194,7 @@ void printConfig(sysconfig_t *ps)
     print_log("seatType     :[ %d ].\n",ps->seatType);
     print_log("auto fota    :[ %d ].\n",ps->autoFotaSwitch);
 }
+
 void checkPressAvail()
 { 
     if(gSysconfig.carry_threshold > 0)
