@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <kernel.h>
+#include <string.h>
 #include "thread_stb.h"
 #include "handler_caninfo.h"
 #include "hw_can.h"
@@ -22,17 +23,25 @@
 #define HEART_BEAT_START 0xBB
 #define HEART_BEAT_INTERVEL 30000
 #define TIMESTAMP_START 0x33
+#define SEVEN_T 268435456
+#define SIX_T 16777216
+#define FIVE_T 1048576
+#define FOUR_T 65536
+#define THREE_T 4096
+#define TWO_T 256
+#define ONE_T 16
 
 K_THREAD_STACK_DEFINE(g_thread_stb_stack, THREAD_STB_STACK_SIZE);
 struct k_thread g_stb_thread;
 k_tid_t g_stb_thread_id = 0;
 static int8_t stage_buff[4] = {0};
 static int8_t heartbeat_buff[4] = {0};
-int8_t RxBuff[12] = {0};
+uint8_t RxBuff[32] = {0};
 static uint32_t timestamp_buff[4] = {0};  
+//static uint8_t loseHb_buff[4] = {0};
 
-uint8_t stage = '0';
-uint8_t lastStage = '0';
+uint8_t stage = 0;
+uint8_t lastStage = 0;
 int32_t speed = 0;
 
 static void threadSTBEntry();
@@ -71,10 +80,20 @@ static void threadSTBEntry()
     static int timestamp = 0;
     static int stage_count = 0;
     static int hb_count = 0;
-    static uint32_t rfid = 0;
     static uint64_t longitude = 0;
     static uint64_t latitude = 0;
     static uint8_t *imei = NULL;
+    static uint32_t RFID = 0;
+    static uint32_t server_start_ts = 0;
+    static uint32_t server_end_ts = 0;
+    static int server_distance = 0;
+    static int server_limit = 0;
+    static int server_alert = 0;
+    //unsigned char tmp_imei[128] = {0};
+    int tmp1 = 0;
+    int tmp2 = 0;
+    int tmp3 = 0;
+    int tmp4 = 0;
    
     ret = hw_uart_init();
     if(0 != ret)
@@ -83,19 +102,37 @@ static void threadSTBEntry()
     }
 
     while(1)
-    {
-        
-        /*
+    {        
         imei = gSysconfig.devId;
-        //print_log("imei is %s\n", imei);
+        print_log("imei is %s\n", imei);
+        //tmp_imei[0] = gSysconfig.devId;
+        //strcpy(tmp_imei, imei);
+        //print_log("tmp_imei is %s\n", tmp_imei);
+
         longitude = getLongitude();
         latitude = getLatitude();
         print_log("longitude is %ld\n", longitude);
         print_log("latitude is %ld\n", latitude);
-        */
+        RFID = RFID_get();
+        print_log("rfid is %d\n", RFID);
+        
 
-
-        hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+        ret = hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+        k_sleep(500);
+        if(ret == 0)
+        {
+            continue;
+        }
+        int test_loop = 0;
+        //print_log("rcv lenth is %d\n", ret);
+        while((test_loop <= 32) && (ret != 0))
+        {
+            //if(0 != RxBuff[test_loop])
+            //{
+                print_log("number %d is %x\n",test_loop, RxBuff[test_loop]);
+                test_loop += 1;
+            //}
+        }
         if((RxBuff[0] == 0x44) && (RxBuff[1] == 0xCC))   //send timestamp when LAB asks
         {
             timestamp = getTimeStamp();
@@ -104,6 +141,70 @@ static void threadSTBEntry()
             timestamp_buff[2] = END;
             //print_log("%d\n", timestamp_buff[1]);
             hw_uart_send_bytes(HW_UART6, timestamp_buff, sizeof(timestamp_buff));
+            print_log("ts sended\n");
+        }
+        else if(RxBuff[0] == 0x66)
+        {
+            server_alert = RxBuff[15];
+            server_limit = RxBuff[14];
+            server_distance = RxBuff[13];
+            uploadAlert_t alert = {0};
+            bool alert_ret = true;
+            
+            print_log("alert %d\n", server_alert);
+            print_log("limit %d\n", server_limit);
+            print_log("distance %d\n", server_distance);
+
+            tmp1 = RxBuff[7];
+            tmp2 = RxBuff[6];
+            tmp3 = RxBuff[5];
+            tmp4 = RxBuff[4];
+
+            server_start_ts = tmp1/16 * SEVEN_T + tmp1%16 * SIX_T + tmp2/16 * FIVE_T + tmp2%16 * FOUR_T + tmp3/16 * THREE_T + tmp3%16 * TWO_T + tmp4/16 * ONE_T + tmp4%16;
+
+            tmp1 = RxBuff[11];
+            tmp2 = RxBuff[10];
+            tmp3 = RxBuff[9];
+            tmp4 = RxBuff[8];
+
+            server_end_ts = tmp1/16 * SEVEN_T + tmp1%16 * SIX_T + tmp2/16 * FIVE_T + tmp2%16 * FOUR_T + tmp3/16 * THREE_T + tmp3%16 * TWO_T + tmp4/16 * ONE_T + tmp4%16;
+
+            print_log("start ts %d\n", server_start_ts);
+            print_log("end ts %d\n", server_end_ts);
+
+
+            alert.start_ts = server_start_ts;
+            alert.end_ts = server_end_ts;
+            alert.distance = server_distance;
+            alert.limit = server_limit;
+            alert.alert = server_alert;
+            alert.longitude = longitude;
+            alert.latitude = latitude;
+            alert.RFID = RFID;
+            alert.IMEI = imei;
+ 
+            print_log("start ts is %d\n", alert.start_ts);
+            print_log("end ts is %d\n", alert.end_ts);
+            print_log("distance ts is %d\n", alert.distance);
+            print_log("limit ts is %d\n", alert.limit);
+            print_log("alert  is %d\n", alert.alert);
+            print_log("longitude ts is %ld\n", alert.longitude);
+            print_log("latitude ts is %ld\n", alert.latitude);
+            print_log("rfid ts is %d\n", alert.RFID);   
+            print_log("imei is %s\n", alert.IMEI);
+            //print_log("imei_d is %d\n", alert.IMEI);
+
+ 
+
+            alert_ret = serverSendAlertInfo(&alert);
+            if(false == alert_ret)
+            {
+                print_log("send alert info failed\n");
+            }
+            else
+            {
+                print_log("send alert info success\n");
+            }
         }
 
         int current_time = k_uptime_get();
@@ -120,33 +221,46 @@ static void threadSTBEntry()
             hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
             if(hb_count < 4)
             {
-                if(RxBuff[0] != 0xBB)
+                if((RxBuff[0] != 0xBB) && (RxBuff[0] != 0x44) && (RxBuff[0] != 0x66)) 
                 {
                     hb_count += 1;
                 }
             }
             else
             {
-                //tell server
+                uploadLoseHb_t loseHb = {0};
+                bool hb_ret = true;
+
+                loseHb.lose_hb = 1;
+
+                hb_ret = serverSendLoseHBInfo(&loseHb);
+                if(false == hb_ret)
+                {
+                    print_log("send lose hb info failed\n");
+                }
+                else
+                {
+                    print_log("send lose hb success\n");
+                }
             }   
 		}
 
         speed = getLastSpeed();
-		print_log("speed is %d\n", speed);  //send veichle stage judging by speed
+		//print_log("speed is %d\n", speed);  //send veichle stage judging by speed
         if(0 == speed)
         {
-            stage = '0';
+            stage = 0;
         }
         else if(speed > 0)
         {
-            stage = '1';
+            stage = 1;
         }
         else if(speed < 0)
         {
-            stage = '2';
+            stage = 2;
         }
 		
-		print_log("stage is %s\n", stage);
+		//print_log("stage is %d\n", stage);
 
         if(stage_count <= 30)
         {
@@ -158,7 +272,7 @@ static void threadSTBEntry()
             else
             {
                 stage_count += 1;
-                print_log("count is %d\n", count);
+                //print_log("count is %d\n", stage_count);
             }
         }
         else

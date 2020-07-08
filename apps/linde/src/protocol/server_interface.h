@@ -392,6 +392,24 @@ typedef struct
     hardVersion_t hardVersion;
 }autoFotaRequest_t;
 
+typedef struct
+{
+    uint32_t start_ts;
+    uint32_t end_ts;
+    uint8_t distance;
+    uint8_t limit;
+    uint8_t alert;
+    uint64_t longitude;
+    uint64_t latitude;
+    uint32_t RFID;
+    unsigned char* IMEI;
+}uploadAlert_t;
+
+typedef struct
+{
+    uint8_t lose_hb;
+}uploadLoseHb_t;
+
 #pragma pack()
 
 enum
@@ -468,6 +486,8 @@ bool serverSendCurrConfig(downloadConfig_t* ps);
 void updateHbLastTime(void);
 bool isLoginOk(void);
 void setLoginOk(bool val);
+bool serverSendAlertInfo(uploadAlert_t *ps);
+bool serverSendLoseHBInfo(uploadLoseHb_t *ps);
 
 int32_t  getServerDebugCmd();
 uint32_t getUniqueMsgId(void);

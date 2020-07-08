@@ -30,6 +30,7 @@ static bool            checkRfidIdAvail(uint32_t rfid);
 static bool            sendRfidMsg(uint32_t rfid, bool rfidAvail);
 static int             rfidListGet(uint32_t* rfidList);
 static void            printRfidList();
+static uint32_t        stb_rfid = 0;
 
 bool rfidThreadStart(void)
 {
@@ -97,6 +98,7 @@ static uint32_t isRfidAdvent()
         //print_log("isRfidAdvent   enter...........1\n");
         isWg34ParsReady = false;
         k_sleep(wgRcvTime);
+        stb_rfid = retRfidId;
         return retRfidId;
     }
     wgBit = rfidWg34RcvBitCnt();
@@ -121,6 +123,13 @@ static uint32_t isRfidAdvent()
     //k_sleep(wgRcvTime);
     return 0;
 }
+
+uint32_t RFID_get()
+{
+    extern  uint32_t stb_rfid;
+    return stb_rfid;
+}
+
 static bool checkRfidIdAvail(uint32_t rfid)
 {
     if(rfid == 0)

@@ -48,6 +48,7 @@ enum SERVER_CMDID
     SERVER_UPLOAD_LOG_REQ = 0x101,
     SERVER_UPLOAD_CAN_REQ = 0x103,
     SERVER_UPLOAD_GPS_REQ = 0x105,
+    SERVER_UPLOAD_ALERT_REQ = 0x107,
 
     SERVER_MSE_UPLOAD_REQ = 0x123,
     DEV_UPLOAD_CRASH      = 0x125,
@@ -95,6 +96,7 @@ enum SERVER_CMDID
     DEV_FOTA_REQ_VERSION_ACK             = 0x311,
     DEV_FOTA_AUTO_DOWNLOAD               = 0x312,
     // 0x313 Reserved
+    SERVER_LOSE_HB_REQ = 0x314,
 
     SER_KION_FACRORY_TEST_START_ACK = 0x500,
     SER_KION_FACTORY_TEST_START     = 0x501,
@@ -1055,6 +1057,17 @@ bool serverSendGpsInfo(uploadGPS_t* ps)
     //UPLOAD_REPORT
     return serverSendBytes(UPLOAD_ONCE, proid, 1, ps, sizeof(uploadGPS_t));  //TODO
     //return serverSendBytes(UPLOAD_REPORT, proid, 1, ps, sizeof(uploadGPS_t));
+}
+
+
+bool serverSendAlertInfo(uploadAlert_t *ps)
+{
+    return serverSendBytes(UPLOAD_ONCE, SERVER_UPLOAD_ALERT_REQ, 3, ps, sizeof(uploadAlert_t));
+}
+
+bool serverSendLoseHBInfo(uploadLoseHb_t *ps)
+{
+    return serverSendBytes(UPLOAD_ONCE, SERVER_LOSE_HB_REQ, 3, ps, sizeof(uploadLoseHb_t));
 }
 
 bool serverSendVersion(uploadVersion_t* ver)

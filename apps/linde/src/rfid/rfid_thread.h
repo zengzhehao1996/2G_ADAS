@@ -8,7 +8,7 @@ bool rfidThreadStart(void);
 void rfidThreadStop(void);
 s64_t rfidThreadRunLastTime();
 void debugRfidErrFlagSet(bool flag);
-uint32_t getRFID(void);
+uint32_t RFID_get(void);
 
 
 #endif
