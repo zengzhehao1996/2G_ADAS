@@ -402,7 +402,7 @@ typedef struct
     uint64_t longitude;
     uint64_t latitude;
     uint32_t RFID;
-    unsigned char* IMEI;
+    uint8_t IMEI[15];
 }uploadAlert_t;
 
 typedef struct

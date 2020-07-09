@@ -89,11 +89,12 @@ static void threadSTBEntry()
     static int server_distance = 0;
     static int server_limit = 0;
     static int server_alert = 0;
-    //unsigned char tmp_imei[128] = {0};
+    uint8_t tmp_imei[15] = {0};
     int tmp1 = 0;
     int tmp2 = 0;
     int tmp3 = 0;
     int tmp4 = 0;
+    int i_loop = 0;
    
     ret = hw_uart_init();
     if(0 != ret)
@@ -105,8 +106,12 @@ static void threadSTBEntry()
     {        
         imei = gSysconfig.devId;
         print_log("imei is %s\n", imei);
-        //tmp_imei[0] = gSysconfig.devId;
-        //strcpy(tmp_imei, imei);
+        /*while(i_loop <= IMEI_SIZE)
+        {
+            tmp_imei[i_loop] = *(imei + i_loop);
+            i_loop++; 
+        }*/
+      
         //print_log("tmp_imei is %s\n", tmp_imei);
 
         longitude = getLongitude();
@@ -181,9 +186,19 @@ static void threadSTBEntry()
             alert.longitude = longitude;
             alert.latitude = latitude;
             alert.RFID = RFID;
-            alert.IMEI = imei;
+            for(i_loop = 0; i_loop < 16; i_loop = i_loop + 1)
+            {
+                alert.IMEI[i_loop] = *(imei + i_loop);
+                //i_loop += 1; 
+                print_log("loop is %d\n", i_loop);
+                print_log("alert.IMEI is %s\n", alert.IMEI);
+                //k_sleep(10);
+            }
+            
+      
+            
  
-            print_log("start ts is %d\n", alert.start_ts);
+            /*print_log("start ts is %d\n", alert.start_ts);
             print_log("end ts is %d\n", alert.end_ts);
             print_log("distance ts is %d\n", alert.distance);
             print_log("limit ts is %d\n", alert.limit);
@@ -191,9 +206,18 @@ static void threadSTBEntry()
             print_log("longitude ts is %ld\n", alert.longitude);
             print_log("latitude ts is %ld\n", alert.latitude);
             print_log("rfid ts is %d\n", alert.RFID);   
-            print_log("imei is %s\n", alert.IMEI);
-            //print_log("imei_d is %d\n", alert.IMEI);
-
+            i_loop = 0;
+            if(i_loop <= 15)
+            {
+                print_log("imei is %s\n", alert.IMEI[i_loop]);
+                i_loop += 1;
+                k_sleep(10);
+                //print_log("imei_d is %d\n", alert.IMEI);
+            }
+            else
+            {
+                break;
+            }*/
  
 
             alert_ret = serverSendAlertInfo(&alert);

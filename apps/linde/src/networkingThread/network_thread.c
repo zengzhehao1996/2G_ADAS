@@ -636,7 +636,7 @@ int networkThreadStart(networkPara_t pra)
 
     gNetworkThreadId = k_thread_create(
         &gNetworkThread, gNetworkThreadStack, NETWORK_THREAD_STACK_SIZE,
-        (k_thread_entry_t)networkThreadEntry, &pra, NULL, NULL, K_PRIO_COOP(9), 0, 0);
+        (k_thread_entry_t) networkThreadEntry, &pra, NULL, NULL, K_PRIO_COOP(9), 0, 0);
 
     if(gNetworkThreadId != 0)
     {
