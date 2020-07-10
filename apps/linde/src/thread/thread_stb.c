@@ -30,6 +30,7 @@
 #define THREE_T 4096
 #define TWO_T 256
 #define ONE_T 16
+#define LEFT_SHIFT 0x100
 
 K_THREAD_STACK_DEFINE(g_thread_stb_stack, THREAD_STB_STACK_SIZE);
 struct k_thread g_stb_thread;
@@ -155,7 +156,7 @@ static void threadSTBEntry()
         {
             server_alert = RxBuff[15];
             server_limit = RxBuff[14];
-            server_distance = RxBuff[13];
+            server_distance = RxBuff[13] + RxBuff[12] * LEFT_SHIFT;
             uploadAlert_t alert = {0};
             bool alert_ret = true;
             
@@ -197,14 +198,14 @@ static void threadSTBEntry()
                 //k_sleep(10);
             }       
  
-            //print_log("start ts is %d\n", alert.start_ts);
-            //print_log("end ts is %d\n", alert.end_ts);
-            //print_log("distance ts is %d\n", alert.distance);
-            //print_log("limit ts is %d\n", alert.limit);
-            //print_log("alert  is %d\n", alert.alert);
-            //print_log("longitude  is %ld\n", alert.longitude);
-            //print_log("latitude  is %ld\n", alert.latitude);
-            //print_log("rfid  is %d\n", alert.RFID); 
+            print_log("start ts is %d\n", alert.start_ts);
+            print_log("end ts is %d\n", alert.end_ts);
+            print_log("distance ts is %d\n", alert.distance);
+            print_log("limit ts is %d\n", alert.limit);
+            print_log("alert  is %d\n", alert.alert);
+            print_log("longitude  is %ld\n", alert.longitude);
+            print_log("latitude  is %ld\n", alert.latitude);
+            print_log("rfid  is %d\n", alert.RFID); 
             print_log("alert.IMEI is %s\n", alert.IMEI);  
             memset(RxBuff, '0', sizeof(RxBuff));
  
@@ -236,11 +237,13 @@ static void threadSTBEntry()
             k_sleep(20);
             if(hb_count < 4)
             {
-                if((RxBuff[0] != 0xBB) && (RxBuff[0] != 0x44) && (RxBuff[0] != 0x66)) 
+                if(RxBuff[0] != 0xBB) 
                 {
-                    hb_count =hb_count + 1;
-                    print_log("********heart beat response rcv********\nheart beat count is %d\n", hb_count);
-                    
+                    if((RxBuff[0] != 0x44) && (RxBuff[0] != 0x66))
+                    {
+                        hb_count =hb_count + 1;
+                        print_log("********heart beat no response rcv********\nheart beat count is %d\n", hb_count);
+                    }
                 }
             }
             else
@@ -251,6 +254,7 @@ static void threadSTBEntry()
                 loseHb.lose_hb = 1;
 
                 hb_ret = serverSendLoseHBInfo(&loseHb);
+                hb_count = 0;
                 if(false == hb_ret)
                 {
                     print_log("********send lose hb info failed********\n");
