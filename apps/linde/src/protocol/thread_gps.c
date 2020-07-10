@@ -162,7 +162,7 @@ uint64_t getLongitude()
 {
     uint64_t longi = 0;
     longi = stb_lon;
-    print_log("get longitude is %ld\n", longi);
+    //print_log("get longitude is %ld\n", longi);
     return longi;
 }
 
@@ -170,6 +170,6 @@ uint64_t getLatitude()
 {
     uint64_t lati = 0;
     lati = stb_lat;
-    print_log("get latitude is %ld\n", lati);
+    //print_log("get latitude is %ld\n", lati);
     return lati;
 }

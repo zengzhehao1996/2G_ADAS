@@ -105,39 +105,41 @@ static void threadSTBEntry()
     while(1)
     {        
         imei = gSysconfig.devId;
-        print_log("imei is %s\n", imei);
-        /*while(i_loop <= IMEI_SIZE)
-        {
-            tmp_imei[i_loop] = *(imei + i_loop);
-            i_loop++; 
-        }*/
+        //print_log("imei is %s\n", imei);
+        
+        //while(i_loop <= IMEI_SIZE)
+        //{
+            //tmp_imei[i_loop] = *(imei + i_loop);
+            //i_loop++; 
+        //}
       
         //print_log("tmp_imei is %s\n", tmp_imei);
 
         longitude = getLongitude();
         latitude = getLatitude();
-        print_log("longitude is %ld\n", longitude);
-        print_log("latitude is %ld\n", latitude);
+        //print_log("longitude is %ld\n", longitude);
+        //print_log("latitude is %ld\n", latitude);
         RFID = RFID_get();
-        print_log("rfid is %d\n", RFID);
+        //print_log("rfid is %d\n", RFID);
         
 
         ret = hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+        //print_log("readed\n");
         k_sleep(500);
-        if(ret == 0)
-        {
-            continue;
-        }
-        int test_loop = 0;
+        //if(ret == 0)
+        //{
+            //continue;
+        //}
+        //int test_loop = 0;
         //print_log("rcv lenth is %d\n", ret);
-        while((test_loop <= 32) && (ret != 0))
-        {
+        //while((test_loop <= 32) && (ret != 0))
+        //{
             //if(0 != RxBuff[test_loop])
             //{
-                print_log("number %d is %x\n",test_loop, RxBuff[test_loop]);
-                test_loop += 1;
+                //print_log("number %d is %x\n",test_loop, RxBuff[test_loop]);
+                //test_loop += 1;
             //}
-        }
+        //}
         if((RxBuff[0] == 0x44) && (RxBuff[1] == 0xCC))   //send timestamp when LAB asks
         {
             timestamp = getTimeStamp();
@@ -146,7 +148,8 @@ static void threadSTBEntry()
             timestamp_buff[2] = END;
             //print_log("%d\n", timestamp_buff[1]);
             hw_uart_send_bytes(HW_UART6, timestamp_buff, sizeof(timestamp_buff));
-            print_log("ts sended\n");
+            memset(RxBuff, '0', sizeof(RxBuff));
+            print_log("********timestamp sended to LAB********\n");
         }
         else if(RxBuff[0] == 0x66)
         {
@@ -156,9 +159,9 @@ static void threadSTBEntry()
             uploadAlert_t alert = {0};
             bool alert_ret = true;
             
-            print_log("alert %d\n", server_alert);
-            print_log("limit %d\n", server_limit);
-            print_log("distance %d\n", server_distance);
+            //print_log("alert %d\n", server_alert);
+            //print_log("limit %d\n", server_limit);
+            //print_log("distance %d\n", server_distance);
 
             tmp1 = RxBuff[7];
             tmp2 = RxBuff[6];
@@ -174,8 +177,8 @@ static void threadSTBEntry()
 
             server_end_ts = tmp1/16 * SEVEN_T + tmp1%16 * SIX_T + tmp2/16 * FIVE_T + tmp2%16 * FOUR_T + tmp3/16 * THREE_T + tmp3%16 * TWO_T + tmp4/16 * ONE_T + tmp4%16;
 
-            print_log("start ts %d\n", server_start_ts);
-            print_log("end ts %d\n", server_end_ts);
+            //print_log("start ts %d\n", server_start_ts);
+            //print_log("end ts %d\n", server_end_ts);
 
 
             alert.start_ts = server_start_ts;
@@ -189,65 +192,55 @@ static void threadSTBEntry()
             for(i_loop = 0; i_loop < 16; i_loop = i_loop + 1)
             {
                 alert.IMEI[i_loop] = *(imei + i_loop);
-                //i_loop += 1; 
-                print_log("loop is %d\n", i_loop);
-                print_log("alert.IMEI is %s\n", alert.IMEI);
+                //print_log("loop is %d\n", i_loop);
+                //print_log("alert.IMEI is %s\n", alert.IMEI);
                 //k_sleep(10);
-            }
-            
-      
-            
+            }       
  
-            /*print_log("start ts is %d\n", alert.start_ts);
-            print_log("end ts is %d\n", alert.end_ts);
-            print_log("distance ts is %d\n", alert.distance);
-            print_log("limit ts is %d\n", alert.limit);
-            print_log("alert  is %d\n", alert.alert);
-            print_log("longitude ts is %ld\n", alert.longitude);
-            print_log("latitude ts is %ld\n", alert.latitude);
-            print_log("rfid ts is %d\n", alert.RFID);   
-            i_loop = 0;
-            if(i_loop <= 15)
-            {
-                print_log("imei is %s\n", alert.IMEI[i_loop]);
-                i_loop += 1;
-                k_sleep(10);
-                //print_log("imei_d is %d\n", alert.IMEI);
-            }
-            else
-            {
-                break;
-            }*/
+            //print_log("start ts is %d\n", alert.start_ts);
+            //print_log("end ts is %d\n", alert.end_ts);
+            //print_log("distance ts is %d\n", alert.distance);
+            //print_log("limit ts is %d\n", alert.limit);
+            //print_log("alert  is %d\n", alert.alert);
+            //print_log("longitude  is %ld\n", alert.longitude);
+            //print_log("latitude  is %ld\n", alert.latitude);
+            //print_log("rfid  is %d\n", alert.RFID); 
+            print_log("alert.IMEI is %s\n", alert.IMEI);  
+            memset(RxBuff, '0', sizeof(RxBuff));
  
 
             alert_ret = serverSendAlertInfo(&alert);
             if(false == alert_ret)
             {
-                print_log("send alert info failed\n");
+                print_log("********send alert info failed********\n");
             }
             else
             {
-                print_log("send alert info success\n");
+                print_log("********send alert info succes********\n");
             }
         }
 
         int current_time = k_uptime_get();
         if((current_time - last_time >= HEART_BEAT_INTERVEL) || last_time == 0)  //send heartbeat every 30s, get response from LAB, tell server if there is no response for 4 times
         {
-            heartbeat_buff[0] = HEART_BEAT_START;
+            heartbeat_buff[0] = HEART_BEAT_START; 
             heartbeat_buff[1] = HEART_BEAT;
             heartbeat_buff[2] = END;
             //strcpy(heartbeat_buff, "uart_test");
 			hw_uart_send_bytes(HW_UART6, heartbeat_buff, sizeof(heartbeat_buff));
-            print_log("heart beat sended\n");
+            print_log("********heart beat sended to LAB********\n");
 			last_time = current_time;
+            memset(RxBuff, '0', sizeof(RxBuff));
             
             hw_uart_read_bytes(HW_UART6, RxBuff, sizeof(RxBuff));
+            k_sleep(20);
             if(hb_count < 4)
             {
                 if((RxBuff[0] != 0xBB) && (RxBuff[0] != 0x44) && (RxBuff[0] != 0x66)) 
                 {
-                    hb_count += 1;
+                    hb_count =hb_count + 1;
+                    print_log("********heart beat response rcv********\nheart beat count is %d\n", hb_count);
+                    
                 }
             }
             else
@@ -260,17 +253,17 @@ static void threadSTBEntry()
                 hb_ret = serverSendLoseHBInfo(&loseHb);
                 if(false == hb_ret)
                 {
-                    print_log("send lose hb info failed\n");
+                    print_log("********send lose hb info failed********\n");
                 }
                 else
                 {
-                    print_log("send lose hb success\n");
+                    print_log("********send lose hb success********\n");
                 }
             }   
 		}
 
         speed = getLastSpeed();
-		//print_log("speed is %d\n", speed);  //send veichle stage judging by speed
+		print_log("speed is %d\n", speed);  //send veichle stage judging by speed
         if(0 == speed)
         {
             stage = 0;
@@ -284,9 +277,9 @@ static void threadSTBEntry()
             stage = 2;
         }
 		
-		//print_log("stage is %d\n", stage);
+		print_log("stage is %d\n", stage);
 
-        if(stage_count <= 30)
+        if(stage_count <= 2)
         {
             if(stage != lastStage)
             {    
@@ -296,26 +289,26 @@ static void threadSTBEntry()
             else
             {
                 stage_count += 1;
-                //print_log("count is %d\n", stage_count);
+                print_log("count is %d\n", stage_count);
             }
         }
         else
         {
             switch(stage)
             {
-                case '0':
+                case 0:
                     stage_buff[0] = STATE_START;
                     stage_buff[1] = STILL;
                     stage_buff[2] = END;
                     break;
 
-                case '1':
+                case 1:
                     stage_buff[0] = STATE_START;
                     stage_buff[1] = FORWARD;
                     stage_buff[2] = END;
                     break;
 
-                case '2':
+                case 2:
                     stage_buff[0] = STATE_START;
                     stage_buff[1] = BACKWARD;
                     stage_buff[2] = END;
@@ -323,7 +316,7 @@ static void threadSTBEntry()
             }
             hw_uart_send_bytes(HW_UART6, stage_buff, sizeof(stage_buff));
             //接下来要从串口读回复
-            print_log("stage change msg sended");
+            print_log("********stage change msg sended to LAB********");
             lastStage = stage;
             stage_count = 0;
         }
